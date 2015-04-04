@@ -43,7 +43,7 @@ BTree - Perl extension for blah blah blah
 =head1 SYNOPSIS
 
   use BTree;
-  blah blah blah
+  my $tree = BTree->new(  );
 
 =head1 DESCRIPTION
 

@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 2;
+use Test::More tests => 4;
 BEGIN { use_ok('BTree') };
 
 #########################
@@ -20,4 +20,11 @@ use BTree;
 my $tree = BTree->new({ by_key => 'id' });
 ok($tree);
 
-$tree->DESTROY();
+my $options = $tree->options();
+ok($options);
+is('HASH', ref $options);
+
+my $ret = $tree->insert({ id => 10 });
+use Data::Dumper; warn Dumper( $ret );
+
+

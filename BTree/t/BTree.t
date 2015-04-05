@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 21;
+use Test::More tests => 24;
 BEGIN { use_ok('BTree') };
 
 #########################
@@ -28,6 +28,10 @@ my $ret;
 
 $ret = $tree->insert({ id => 10, 'name' => 'Bob' });
 ok($ret, 'normal insert');
+
+ok $ret->exists(10);
+ok $ret->exists({ id => 10, 'name' => 'Bob' });
+ok !$ret->exists(99);
 
 my $n;
 $n = $tree->search(10);

@@ -57,10 +57,12 @@ BTreeNode * btree_node_create(IV key, HV *payload)
 }
 
 
+BTreeNode * btree_search(BTreeNode * node, IV key);
 inline bool btree_insert_node_hash_by_key(BTreeNode * node, IV key, HV * payload);
 inline bool btree_pad_insert_node(BTreePad *pad, IV key, HV *node_hash);
 inline bool btree_pad_insert_node_by_key_field(BTreePad *pad, char * key_field, int key_field_len, HV *node_hash);
-inline bool btree_pad_insert_av_nodes_by_key_field(BTreePad * pad, char * key_field, unsigned int key_field_len, AV* new_nodes);
+inline AV * btree_pad_insert_av_nodes_by_key_field(BTreePad * pad, char * key_field, unsigned int key_field_len, AV* new_nodes);
+bool btree_node_exists(BTreeNode * node, IV key);
 
 
 BTreeNode * btree_find_leftmost_node(BTreeNode * n)
@@ -160,7 +162,24 @@ bool btree_update(BTreeNode * node, IV key, HV * payload)
     return FALSE;
 }
 
-BTreeNode * btree_search(BTreeNode * node, IV key);
+
+bool btree_node_exists(BTreeNode * node, IV key)
+{
+    if (key < node->key) {
+        if (node->left) {
+            return btree_node_exists(node->left, key);
+        }
+        return false;
+    } else if (key > node->key) {
+        if (node->right) {
+            return btree_node_exists(node->right, key);
+        }
+        return false;
+    } else if (key == node->key) {
+        return true;
+    }
+    return false;
+}
 
 BTreeNode * btree_search(BTreeNode * node, IV key)
 {
@@ -296,17 +315,18 @@ bool btree_pad_insert_node_by_key_field(BTreePad *pad, char * key_field, int key
     return btree_pad_insert_node(pad, key, node_hash);
 }
 
-bool btree_pad_insert_av_nodes_by_key_field(BTreePad * pad, char * key_field, unsigned int key_field_len, AV* new_nodes)
+AV * btree_pad_insert_av_nodes_by_key_field(BTreePad * pad, char * key_field, unsigned int key_field_len, AV* new_nodes)
 {
+    bool ret;
+    AV * av_result = newAV();
     SSize_t top_index = av_top_index(new_nodes);
     for (int i = 0; i <= top_index; i++) {
         SV **  new_node_ref_p = av_fetch(new_nodes, i, FALSE);
         HV * new_node = (HV*) SvRV(*new_node_ref_p);
-        if (!btree_pad_insert_node_by_key_field(pad, key_field, key_field_len, new_node)) {
-            return FALSE;
-        }
+        ret = btree_pad_insert_node_by_key_field(pad, key_field, key_field_len, new_node);
+        av_push(av_result, newSViv(ret));
     }
-    return TRUE;
+    return av_result;
 }
 
 
@@ -489,6 +509,59 @@ update(self_sv, ...)
 
 
 SV *
+exists(self_sv, arg)
+    SV* self_sv
+    SV* arg
+
+    CODE:
+        BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+
+        IV key;
+        
+        if (SvIOK(arg)) {
+            key = SvIV(arg);
+        } else if (SvROK(ST(1)) && SvTYPE(SvRV(ST(1))) == SVt_PVHV) {
+            HV * node_hash = (HV*) SvRV(ST(1));
+            char * key_field = "key";
+            if (!pad || !pad->options) {
+                XSRETURN_UNDEF;
+            }
+            if (pad->options) {
+                key_field = get_options_key_field(pad->options);
+            }
+
+        } else {
+            croak("The exists method can only accept exists(IV) or exists(HashRef)");
+        }
+
+        if (pad->root) {
+            bool ret = btree_node_exists(pad->root, key);
+            XSRETURN(ret);
+        }
+
+AV *
+insert_those(self_sv, ...)
+    SV* self_sv
+    CODE:
+        BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+
+        char * key_field = "key";
+        if (!pad || !pad->options) {
+            XSRETURN_UNDEF;
+        }
+        if (pad->options) {
+            key_field = get_options_key_field(pad->options);
+        }
+        if (SvROK(ST(1)) && SvTYPE(SvRV(ST(1))) == SVt_PVAV ) {
+            RETVAL = btree_pad_insert_av_nodes_by_key_field(pad, key_field, strlen(key_field), (AV*) SvRV(ST(1)));
+        } else {
+            XSRETURN_UNDEF;
+        }
+    OUTPUT:
+        RETVAL
+
+
+SV *
 insert(self_sv, ...)
     SV* self_sv
     CODE:
@@ -496,7 +569,6 @@ insert(self_sv, ...)
     BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
 
     char * key_field = "key";
-
     if (!pad || !pad->options) {
         XSRETURN_UNDEF;
     }
@@ -519,8 +591,9 @@ insert(self_sv, ...)
             node_hash = (HV*) SvRV(ST(1));
         } else if (SvROK(ST(1)) && SvTYPE(SvRV(ST(1))) == SVt_PVAV ) {
 
-            bool ret = btree_pad_insert_av_nodes_by_key_field(pad, key_field, strlen(key_field), (AV*) SvRV(ST(1)));
-            XSRETURN(ret);
+            AV * result = btree_pad_insert_av_nodes_by_key_field(pad, key_field, strlen(key_field), (AV*) SvRV(ST(1)));
+            XSRETURN_YES;
+            // RETVAL = sv_2mortal(result);
 
         } else {
             croak("The BTree::insert method can only accept either (key, hashref) or (hashref)");

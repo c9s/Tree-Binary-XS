@@ -262,9 +262,8 @@ options(self_sv)
 
 
 void
-delete(self_sv, key_sv, ...)
+delete(self_sv, ...)
     SV* self_sv
-    SV* key_sv
     PPCODE:
 
     BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
@@ -273,9 +272,7 @@ delete(self_sv, key_sv, ...)
         XSRETURN_UNDEF;
     }
 
-
     if (items > 1) {
-        debug("Found more than one key to delete");
         int i;
         for (i = 1; i < items; i++) {
             SV * arg_sv = ST(i);

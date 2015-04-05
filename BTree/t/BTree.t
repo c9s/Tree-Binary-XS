@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 14;
+use Test::More tests => 15;
 BEGIN { use_ok('BTree') };
 
 #########################
@@ -31,6 +31,9 @@ ok($ret, 'normal insert');
 
 $ret = $tree->insert({ id => 8, 'name' => 'John' });
 ok($ret, 'normal insert');
+
+$ret = $tree->update({ id => 8, 'name' => 'Johnson' });
+ok($ret, 'normal update');
 
 $ret = $tree->insert({ id => 12, 'name' => 'Connie' });
 ok($ret, 'normal insert');

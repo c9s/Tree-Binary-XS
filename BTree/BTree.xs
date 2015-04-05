@@ -127,7 +127,26 @@ bool btree_delete(BTreeNode * node, IV key)
 }
 
 
+bool btree_update(BTreeNode * node, IV key, HV * payload);
 
+bool btree_update(BTreeNode * node, IV key, HV * payload)
+{
+    if (key < node->key) {
+        if (node->left) {
+            return btree_update(node->left, key, payload);
+        }
+        return FALSE;
+    } else if (key > node->key) {
+        if (node->right) {
+            return btree_update(node->right, key, payload);
+        }
+        return FALSE;
+    } else if (key == node->key) {
+        node->payload = payload;
+        return TRUE;
+    }
+    return FALSE;
+}
 
 bool btree_insert(BTreeNode * node, IV key, HV * payload) 
 {
@@ -202,6 +221,31 @@ IV hv_fetch_key_must(HV * hash, char *field, uint field_len)
     }
     return SvIV(*ret);
 }
+
+
+
+char * get_options_key_field(HV * options)
+{
+    if (!hv_exists(options, "by_key", sizeof("by_key") - 1)) {
+        return NULL;
+    }
+
+    SV** field_sv = hv_fetch(options, "by_key", 6, 0);
+    if (field_sv == NULL) {
+        return NULL;
+    }
+
+    if (SvTYPE(*field_sv) != SVt_PV) {
+        return NULL;
+    }
+
+    char * key_field = (char *)SvPV_nolen(*field_sv);
+    if (key_field == NULL) {
+        return NULL;
+    }
+    return key_field;
+}
+
 
 
 
@@ -296,6 +340,58 @@ dump(self_sv)
         BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
         btree_dump(pad->root, 0);
 
+
+void
+update(self_sv, ...)
+    SV* self_sv
+    PPCODE:
+
+    BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+
+    char *key_field = "key";
+
+    if (!pad || !pad->options) {
+        XSRETURN_UNDEF;
+    }
+    if (pad->options) {
+        key_field = get_options_key_field(pad->options);
+    }
+
+    IV key;
+    HV * node_hash = NULL;
+
+    // if there is only one argument (items == 2 including $self)
+    if (items == 2) {
+        if (SvIOK(ST(1))) {
+            key = SvIV( ST(1) );
+            node_hash = newHV();
+        } else if (SvROK( ST(1) ) && SvTYPE(SvRV(ST(1))) == SVt_PVHV ) {
+            node_hash = (HV*) SvRV(ST(1));
+        }
+    } else if (items == 3) {
+        if (SvIOK(ST(1)) && SvROK(ST(2)) && SvTYPE(SvRV(ST(2))) == SVt_PVHV) {
+            key = SvIV( ST(1) );
+            node_hash = (HV*) SvRV(ST(2));
+        } else {
+            croak("The BTree::insert method can only accept either (key, hashref) or (hashref)");
+        }
+    }
+
+    if (!key) {
+        // If the key does not exist
+        key = hv_fetch_key_must(node_hash, key_field, strlen(key_field));
+    }
+
+    if (pad->root) {
+        if (btree_update(pad->root, key, node_hash)) {
+            XSRETURN_YES;
+        }
+    }
+    XSRETURN_NO;
+
+
+
+
 void
 insert(self_sv, ...)
     SV* self_sv
@@ -309,21 +405,7 @@ insert(self_sv, ...)
         XSRETURN_UNDEF;
     }
     if (pad->options) {
-        if (hv_exists(pad->options, "by_key", sizeof("by_key") - 1)) {
-            SV** field_sv = hv_fetch(pad->options, "by_key", 6, 0);
-            if (field_sv == NULL) {
-                XSRETURN_UNDEF;
-            }
-
-            if (SvTYPE(*field_sv) != SVt_PV) {
-                XSRETURN_UNDEF;
-            }
-
-            key_field = (char *)SvPV_nolen(*field_sv);
-            if (key_field == NULL) {
-                XSRETURN_UNDEF;
-            }
-        }
+        key_field = get_options_key_field(pad->options);
     }
 
     IV key;
@@ -331,19 +413,14 @@ insert(self_sv, ...)
 
     // if there is only one argument (items == 2 including $self)
     if (items == 2) {
-        debug("found 1 arguments");
         if (SvIOK(ST(1))) {
-            debug("first argument is IV, without payload");
             key = SvIV( ST(1) );
             node_hash = newHV();
         } else if (SvROK( ST(1) ) && SvTYPE(SvRV(ST(1))) == SVt_PVHV ) {
-            debug("first argument is hashref");
             node_hash = (HV*) SvRV(ST(1));
         }
     } else if (items == 3) {
-        debug("found 2 arguments");
         if (SvIOK(ST(1)) && SvROK(ST(2)) && SvTYPE(SvRV(ST(2))) == SVt_PVHV) {
-            debug("first argument is IV and the second one is hashref");
             key = SvIV( ST(1) );
             node_hash = (HV*) SvRV(ST(2));
         } else {
@@ -356,15 +433,11 @@ insert(self_sv, ...)
         key = hv_fetch_key_must(node_hash, key_field, strlen(key_field));
     }
 
-    debug("Key IV is %"IVdf"", key);
-    debug("Peek: %s", Perl_sv_peek((SV*) node_hash));
-
     if (pad->root) {
         btree_insert(pad->root, key, node_hash);
     } else {
         pad->root = btree_node_create(key, node_hash);
     }
-    btree_dump(pad->root, 0);
     XSRETURN_YES;
 
 

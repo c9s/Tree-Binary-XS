@@ -76,7 +76,7 @@ bool btree_insert(BTreeNode * node, IV key, HV * payload) {
 #define DEBUG 1
 
 #define debug(fmt, ...) \
-            do { if (DEBUG) fprintf(stderr, "DEBUG: " fmt "\n", __VA_ARGS__); } while (0)
+            do { if (DEBUG) fprintf(stderr, "DEBUG: " fmt "\n", ##__VA_ARGS__); } while (0)
 
 
 MODULE = BTree		PACKAGE = BTree		
@@ -128,14 +128,13 @@ options(self_sv)
         RETVAL
 
 void
-insert(self_sv, new_node_rv)
+insert(self_sv, ...)
     SV* self_sv
-    SV* new_node_rv
     PPCODE:
 
     BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
 
-    HV * node_hash = (HV*) SvRV(new_node_rv);
+
 
     char *key_field = "key";
 
@@ -160,6 +159,24 @@ insert(self_sv, new_node_rv)
         }
     }
 
+    // if there is only one argument (items == 2 including $self)
+    if (items == 2) {
+        debug("found 1 arguments");
+        if (SvIOK(ST(1))) {
+            debug("first argument is IV, without payload");
+        } else if (SvROK( ST(1) ) && SvTYPE(SvRV(ST(1))) == SVt_PVHV ) {
+            debug("first argument is hashref");
+        }
+    } else if (items == 3) {
+        debug("found 2 arguments");
+        if (SvIOK(ST(1)) && SvROK(ST(2)) && SvTYPE(SvRV(ST(2))) == SVt_PVHV) {
+            debug("first argument is IV and the second one is hashref");
+        }
+    }
+
+
+    /*
+    HV * node_hash = (HV*) SvRV(new_node_rv);
 
     debug("Found key field: %s", key_field);
     SV** key_svs = hv_fetch(node_hash, key_field, strlen(key_field), FALSE);
@@ -182,6 +199,7 @@ insert(self_sv, new_node_rv)
     } else {
         pad->root = btree_node_create(key, node_hash);
     }
+    */
     XSRETURN_YES;
 
 

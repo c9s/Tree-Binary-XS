@@ -1,4 +1,4 @@
-package BTree;
+package BinaryTree::XS;
 
 use 5.018002;
 use strict;
@@ -12,7 +12,7 @@ our @ISA = qw(Exporter);
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 
-# This allows declaration	use BTree ':all';
+# This allows declaration	use BinaryTree ':all';
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
 our %EXPORT_TAGS = ( 'all' => [ qw(
@@ -28,7 +28,7 @@ our @EXPORT = qw(
 our $VERSION = '0.01';
 
 require XSLoader;
-XSLoader::load('BTree', $VERSION);
+XSLoader::load('BinaryTree::XS', $VERSION);
 
 # Preloaded methods go here.
 
@@ -38,12 +38,12 @@ __END__
 
 =head1 NAME
 
-BTree - Perl extension for blah blah blah
+BinaryTree - Perl extension for blah blah blah
 
 =head1 SYNOPSIS
 
-  use BTree;
-  my $tree = BTree->new({ by_key => 'id' });
+  use BinaryTree;
+  my $tree = BinaryTree->new({ by_key => 'id' });
 
   $tree->insert({ foo => 'bar', id => 11 });
 
@@ -69,17 +69,10 @@ BTree - Perl extension for blah blah blah
 
 =head1 DESCRIPTION
 
-Stub documentation for BTree, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
-
-Blah blah blah.
 
 =head2 EXPORT
 
 None by default.
-
-
 
 =head1 SEE ALSO
 

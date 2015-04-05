@@ -3,11 +3,11 @@ use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 WriteMakefile(
-    NAME              => 'BTree',
-    VERSION_FROM      => 'lib/BTree.pm', # finds $VERSION
+    NAME              => 'BinaryTree::XS',
+    VERSION_FROM      => 'lib/BinaryTree/XS.pm',
     PREREQ_PM         => {}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-      (ABSTRACT_FROM  => 'lib/BTree.pm', # retrieve abstract from module
+      (ABSTRACT_FROM  => 'lib/BinaryTree/XS.pm',
        AUTHOR         => 'Lin Yo-an <c9s@local>') : ()),
     LIBS              => [''], # e.g., '-lm'
 

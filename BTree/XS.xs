@@ -10,45 +10,45 @@
 #define debug(fmt, ...) \
             do { if (ENABLE_DEBUG) fprintf(stderr, "DEBUG: " fmt "\n", ##__VA_ARGS__); } while (0)
 
-typedef struct _btree_node BTreeNode;
-typedef struct _btree_pad BTreePad;
+typedef struct _btree_node BinaryTreeNode;
+typedef struct _btree_pad BinaryTreePad;
 
 struct _btree_pad { 
-    BTreeNode *root;
+    BinaryTreeNode *root;
     HV * options;
 };
 
 struct _btree_node {  
     IV key;
     // unsigned long size;
-    BTreeNode* parent;
-    BTreeNode* left;
-    BTreeNode* right;
+    BinaryTreeNode* parent;
+    BinaryTreeNode* left;
+    BinaryTreeNode* right;
     HV * payload;
 };
 
 
-BTreePad * btree_pad_new();
+BinaryTreePad * btree_pad_new();
 
 
-BTreeNode * btree_find_leftmost_node(BTreeNode * n);
+BinaryTreeNode * btree_find_leftmost_node(BinaryTreeNode * n);
 
-BTreeNode * btree_node_create(IV key, HV *payload);
+BinaryTreeNode * btree_node_create(IV key, HV *payload);
 
 
-BTreePad * btree_pad_new()
+BinaryTreePad * btree_pad_new()
 {
-    BTreePad * pad = NULL;
-    Newx(pad, sizeof(BTreePad), BTreePad);
+    BinaryTreePad * pad = NULL;
+    Newx(pad, sizeof(BinaryTreePad), BinaryTreePad);
     pad->root = NULL;
     pad->options = NULL;
     return pad;
 }
 
-BTreeNode * btree_node_create(IV key, HV *payload)
+BinaryTreeNode * btree_node_create(IV key, HV *payload)
 {
-    BTreeNode * new_node = NULL;
-    Newx(new_node, sizeof(BTreeNode), BTreeNode);
+    BinaryTreeNode * new_node = NULL;
+    Newx(new_node, sizeof(BinaryTreeNode), BinaryTreeNode);
     new_node->payload = payload;
     new_node->key = key;
     new_node->left = NULL;
@@ -57,15 +57,15 @@ BTreeNode * btree_node_create(IV key, HV *payload)
 }
 
 
-BTreeNode * btree_search(BTreeNode * node, IV key);
-inline bool btree_insert_node_hash_by_key(BTreeNode * node, IV key, HV * payload);
-inline bool btree_pad_insert_node(BTreePad *pad, IV key, HV *node_hash);
-inline bool btree_pad_insert_node_by_key_field(BTreePad *pad, char * key_field, int key_field_len, HV *node_hash);
-inline AV * btree_pad_insert_av_nodes_by_key_field(BTreePad * pad, char * key_field, unsigned int key_field_len, AV* new_nodes);
-bool btree_node_exists(BTreeNode * node, IV key);
+BinaryTreeNode * btree_search(BinaryTreeNode * node, IV key);
+inline bool btree_insert_node_hash_by_key(BinaryTreeNode * node, IV key, HV * payload);
+inline bool btree_pad_insert_node(BinaryTreePad *pad, IV key, HV *node_hash);
+inline bool btree_pad_insert_node_by_key_field(BinaryTreePad *pad, char * key_field, int key_field_len, HV *node_hash);
+inline AV * btree_pad_insert_av_nodes_by_key_field(BinaryTreePad * pad, char * key_field, unsigned int key_field_len, AV* new_nodes);
+bool btree_node_exists(BinaryTreeNode * node, IV key);
 
 
-BTreeNode * btree_find_leftmost_node(BTreeNode * n)
+BinaryTreeNode * btree_find_leftmost_node(BinaryTreeNode * n)
 {
     if (n->left) {
         return btree_find_leftmost_node(n->left);
@@ -73,9 +73,9 @@ BTreeNode * btree_find_leftmost_node(BTreeNode * n)
     return n;
 }
 
-bool btree_delete(BTreeNode * node, IV key);
+bool btree_delete(BinaryTreeNode * node, IV key);
 
-void btree_node_free(BTreeNode * node)
+void btree_node_free(BinaryTreeNode * node)
 {
     if (node) {
         if (node->left) {
@@ -91,7 +91,7 @@ void btree_node_free(BTreeNode * node)
     }
 }
 
-bool btree_delete(BTreeNode * node, IV key) 
+bool btree_delete(BinaryTreeNode * node, IV key) 
 {
     if (key < node->key) {
         if (node->left) {
@@ -108,18 +108,18 @@ bool btree_delete(BTreeNode * node, IV key)
     } else if (key == node->key) {
 
         if (node->left && node->right) {
-            BTreeNode* leftmost = btree_find_leftmost_node(node->right);
+            BinaryTreeNode* leftmost = btree_find_leftmost_node(node->right);
             node->key = leftmost->key;
             node->payload = leftmost->payload;
             btree_node_free(leftmost);
         } else if (node->left) {
-            BTreeNode *to_free = node->left;
+            BinaryTreeNode *to_free = node->left;
             node->key = to_free->key;
             node->payload = to_free->payload;
             node->left = to_free->left;
             Safefree(to_free);
         } else if (node->right) {
-            BTreeNode *to_free = node->right;
+            BinaryTreeNode *to_free = node->right;
             node->key = to_free->key;
             node->payload = to_free->payload;
             node->right = to_free->right;
@@ -138,9 +138,9 @@ bool btree_delete(BTreeNode * node, IV key)
 }
 
 
-bool btree_update(BTreeNode * node, IV key, HV * payload);
+bool btree_update(BinaryTreeNode * node, IV key, HV * payload);
 
-bool btree_update(BTreeNode * node, IV key, HV * payload)
+bool btree_update(BinaryTreeNode * node, IV key, HV * payload)
 {
     if (key < node->key) {
         if (node->left) {
@@ -163,7 +163,7 @@ bool btree_update(BTreeNode * node, IV key, HV * payload)
 }
 
 
-bool btree_node_exists(BTreeNode * node, IV key)
+bool btree_node_exists(BinaryTreeNode * node, IV key)
 {
     if (key < node->key) {
         if (node->left) {
@@ -181,7 +181,7 @@ bool btree_node_exists(BTreeNode * node, IV key)
     return false;
 }
 
-BTreeNode * btree_search(BTreeNode * node, IV key)
+BinaryTreeNode * btree_search(BinaryTreeNode * node, IV key)
 {
     if (key < node->key) {
         if (node->left) {
@@ -199,13 +199,13 @@ BTreeNode * btree_search(BTreeNode * node, IV key)
     return NULL;
 }
 
-bool btree_insert_node_hash_by_key(BTreeNode * node, IV key, HV * payload) 
+bool btree_insert_node_hash_by_key(BinaryTreeNode * node, IV key, HV * payload) 
 {
     if (key < node->key) {
         if (node->left) {
             return btree_insert_node_hash_by_key(node->left, key, payload);
         } else {
-            BTreeNode * new_node = btree_node_create(key, payload);
+            BinaryTreeNode * new_node = btree_node_create(key, payload);
             new_node->parent = node;
             node->left = new_node;
         }
@@ -214,7 +214,7 @@ bool btree_insert_node_hash_by_key(BTreeNode * node, IV key, HV * payload)
         if (node->right) {
             return btree_insert_node_hash_by_key(node->right, key, payload);
         } else {
-            BTreeNode * new_node = btree_node_create(key, payload);
+            BinaryTreeNode * new_node = btree_node_create(key, payload);
             new_node->parent = node;
             node->right = new_node;
         }
@@ -227,9 +227,9 @@ bool btree_insert_node_hash_by_key(BTreeNode * node, IV key, HV * payload)
 }
 
 
-void btree_dump(BTreeNode* node, uint indent);
+void btree_dump(BinaryTreeNode* node, uint indent);
 
-void btree_dump(BTreeNode* node, uint indent)
+void btree_dump(BinaryTreeNode* node, uint indent)
 {
     for (int i = 0 ; i < indent; i++) {
         fprintf(stderr, "    ");
@@ -299,7 +299,7 @@ char * get_options_key_field(HV * options)
 
 
 
-bool btree_pad_insert_node(BTreePad *pad, IV key, HV *node_hash)
+bool btree_pad_insert_node(BinaryTreePad *pad, IV key, HV *node_hash)
 {
     SvREFCNT_inc(node_hash);
     if (pad->root) {
@@ -309,13 +309,13 @@ bool btree_pad_insert_node(BTreePad *pad, IV key, HV *node_hash)
     return TRUE;
 }
 
-bool btree_pad_insert_node_by_key_field(BTreePad *pad, char * key_field, int key_field_len, HV *node_hash)
+bool btree_pad_insert_node_by_key_field(BinaryTreePad *pad, char * key_field, int key_field_len, HV *node_hash)
 {
     IV key = hv_fetch_key_must(node_hash, key_field, key_field_len);
     return btree_pad_insert_node(pad, key, node_hash);
 }
 
-AV * btree_pad_insert_av_nodes_by_key_field(BTreePad * pad, char * key_field, unsigned int key_field_len, AV* new_nodes)
+AV * btree_pad_insert_av_nodes_by_key_field(BinaryTreePad * pad, char * key_field, unsigned int key_field_len, AV* new_nodes)
 {
     bool ret;
     AV * av_result = newAV();
@@ -331,12 +331,7 @@ AV * btree_pad_insert_av_nodes_by_key_field(BTreePad * pad, char * key_field, un
 
 
 
-
-
-
-
-
-MODULE = BTree		PACKAGE = BTree		
+MODULE = BinaryTree::XS		PACKAGE = BinaryTree::XS		
 
 TYPEMAP: <<END;
 
@@ -345,7 +340,7 @@ END
 void
 new(...)
     PPCODE:
-        BTreePad *pad = btree_pad_new();
+        BinaryTreePad *pad = btree_pad_new();
 
         // printf("pad: %x\n", pad);
 
@@ -375,7 +370,7 @@ HV*
 options(self_sv)
     SV* self_sv
     CODE:
-        BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+        BinaryTreePad* pad = (BinaryTreePad*) SvRV(SvRV(self_sv));
         if (pad->options) {
             RETVAL = pad->options;
         } else {
@@ -391,7 +386,7 @@ delete(self_sv, ...)
     SV* self_sv
     CODE:
 
-    BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+    BinaryTreePad* pad = (BinaryTreePad*) SvRV(SvRV(self_sv));
     if (!pad->root) {
         // Empty tree
         XSRETURN_UNDEF;
@@ -424,7 +419,7 @@ void
 dump(self_sv)
     SV* self_sv
     CODE:
-        BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+        BinaryTreePad* pad = (BinaryTreePad*) SvRV(SvRV(self_sv));
         btree_dump(pad->root, 0);
 
 
@@ -434,7 +429,7 @@ search(self_sv, key_sv)
     SV * self_sv
     SV * key_sv
     CODE:
-        BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+        BinaryTreePad* pad = (BinaryTreePad*) SvRV(SvRV(self_sv));
 
         if (!pad->root) {
             XSRETURN_UNDEF;
@@ -445,7 +440,7 @@ search(self_sv, key_sv)
         }
 
         IV key = SvIV(key_sv);
-        BTreeNode * node = btree_search(pad->root, key);
+        BinaryTreeNode * node = btree_search(pad->root, key);
 
         if (node == NULL || node->payload == NULL) {
             XSRETURN_UNDEF;
@@ -462,7 +457,7 @@ update(self_sv, ...)
     SV* self_sv
     CODE:
 
-        BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+        BinaryTreePad* pad = (BinaryTreePad*) SvRV(SvRV(self_sv));
 
         char *key_field = "key";
 
@@ -489,7 +484,7 @@ update(self_sv, ...)
                 key = SvIV( ST(1) );
                 node_hash = (HV*) SvRV(ST(2));
             } else {
-                croak("The BTree::insert method can only accept either (key, hashref) or (hashref)");
+                croak("The BinaryTree::insert method can only accept either (key, hashref) or (hashref)");
             }
         }
 
@@ -514,7 +509,7 @@ exists(self_sv, arg)
     SV* arg
 
     CODE:
-        BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+        BinaryTreePad* pad = (BinaryTreePad*) SvRV(SvRV(self_sv));
 
         IV key;
         
@@ -543,7 +538,7 @@ AV *
 insert_those(self_sv, ...)
     SV* self_sv
     CODE:
-        BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+        BinaryTreePad* pad = (BinaryTreePad*) SvRV(SvRV(self_sv));
 
         char * key_field = "key";
         if (!pad || !pad->options) {
@@ -566,7 +561,7 @@ insert(self_sv, ...)
     SV* self_sv
     CODE:
 
-    BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+    BinaryTreePad* pad = (BinaryTreePad*) SvRV(SvRV(self_sv));
 
     char * key_field = "key";
     if (!pad || !pad->options) {
@@ -596,14 +591,14 @@ insert(self_sv, ...)
             // RETVAL = sv_2mortal(result);
 
         } else {
-            croak("The BTree::insert method can only accept either (key, hashref) or (hashref)");
+            croak("The BinaryTree::insert method can only accept either (key, hashref) or (hashref)");
         }
     } else if (items == 3) {
         if (SvIOK(ST(1)) && SvROK(ST(2)) && SvTYPE(SvRV(ST(2))) == SVt_PVHV) {
             key = SvIV( ST(1) );
             node_hash = (HV*) SvRV(ST(2));
         } else {
-            croak("The BTree::insert method can only accept either (key, hashref) or (hashref)");
+            croak("The BinaryTree::insert method can only accept either (key, hashref) or (hashref)");
         }
     }
 
@@ -619,9 +614,9 @@ void
 DESTROY(self_sv)
     SV* self_sv
     PPCODE:
-        BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+        BinaryTreePad* pad = (BinaryTreePad*) SvRV(SvRV(self_sv));
         // printf("DESTORY pad: %x\n", pad);
-        // BTreePad* pad = *(BTreePad**) p;
+        // BinaryTreePad* pad = *(BinaryTreePad**) p;
         if (pad && pad->root) {
             btree_node_free(pad->root);
         }

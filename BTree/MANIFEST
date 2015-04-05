@@ -1,8 +1,9 @@
-BTree.xs
+XS.xs
 Changes
 Makefile.PL
 MANIFEST
 ppport.h
 README
-t/BTree.t
-lib/BTree.pm
+t/00-basic.t
+t/01-bulk_insert.t
+lib/BinaryTree/XS.pm

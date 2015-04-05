@@ -50,10 +50,18 @@ BTree - Perl extension for blah blah blah
   # to insert multiple keys one time.
   $tree->insert([{ foo => 'bar', id => 11 }, ... ]);
 
+  $ret->exists(10);
+  $ret->exists({ id => 10, 'name' => 'Bob' });
+
   # Use specified key instead of the key from payload
   $tree->insert(10, { foo => 'bar' });
 
+  # Bulk insert
+  @ret = $tree->insert_those([{ id => 10, 'name' => 'Bob' },  { id => 3, 'name' => 'John' }, { id => 2, 'name' => 'Hank' } ]);
+
   $tree->update(10, { foo => 'bar' })
+
+  $n = $tree->search(10);
 
   $tree->exists(10);
   $tree->exists({ foo => 'bar' , id => 10 });

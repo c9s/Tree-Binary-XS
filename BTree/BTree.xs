@@ -264,7 +264,7 @@ options(self_sv)
 void
 delete(self_sv, ...)
     SV* self_sv
-    PPCODE:
+    CODE:
 
     BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
     if (!pad->root) {

@@ -38,7 +38,7 @@ __END__
 
 =head1 NAME
 
-Tree::Binary - Perl extension for blah blah blah
+Tree::Binary::XS - Perl extension for manipulating binary tree structure
 
 =head1 SYNOPSIS
 
@@ -66,9 +66,10 @@ Tree::Binary - Perl extension for blah blah blah
   $tree->exists(10);
   $tree->exists({ foo => 'bar' , id => 10 });
 
-
 =head1 DESCRIPTION
 
+Please note this extension is not compatible with the L<Tree::Binary> package, this module redesigned and simplified 
+the interface of manipulating tree structure.
 
 =head2 EXPORT
 

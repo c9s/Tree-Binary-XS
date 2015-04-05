@@ -1,5 +1,5 @@
 # Before 'make install' is performed this script should be runnable with
-# 'make test'. After 'make install' it should work as 'perl BinaryTree.t'
+# 'make test'. After 'make install' it should work as 'perl Tree::Binary.t'
 
 #########################
 
@@ -9,15 +9,15 @@ use strict;
 use warnings;
 
 use Test::More tests => 24;
-BEGIN { use_ok('BinaryTree') };
+BEGIN { use_ok('Tree::Binary::XS') };
 
 #########################
 
 # Insert your test code below, the Test::More module is use()ed here so read
 # its man page ( perldoc Test::More ) for help writing this test script.
-use BinaryTree;
+use Tree::Binary::XS;
 
-my $tree = BinaryTree->new({ by_key => 'id' });
+my $tree = Tree::Binary::XS->new({ by_key => 'id' });
 ok($tree);
 
 my $options = $tree->options();

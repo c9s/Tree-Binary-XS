@@ -331,7 +331,10 @@ AV * btree_pad_insert_av_nodes_by_key_field(BinaryTreePad * pad, char * key_fiel
 
 
 
-MODULE = BinaryTree::XS		PACKAGE = BinaryTree::XS		
+
+
+
+MODULE = Tree::Binary::XS		PACKAGE = Tree::Binary::XS		
 
 TYPEMAP: <<END;
 

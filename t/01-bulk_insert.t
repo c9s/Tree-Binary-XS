@@ -3,15 +3,15 @@ use strict;
 use warnings;
 
 use Test::More tests => 3;
-BEGIN { use_ok('BinaryTree') };
+BEGIN { use_ok('Tree::Binary::XS') };
 
 #########################
 
 # Insert your test code below, the Test::More module is use()ed here so read
 # its man page ( perldoc Test::More ) for help writing this test script.
-use BinaryTree;
+use Tree::Binary::XS;
 
-my $tree = BinaryTree->new({ by_key => 'id' });
+my $tree = Tree::Binary::XS->new({ by_key => 'id' });
 ok($tree);
 
 my @ret;

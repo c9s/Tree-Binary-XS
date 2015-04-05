@@ -1,4 +1,4 @@
-# This Makefile is for the BinaryTree::XS extension to perl.
+# This Makefile is for the Tree::Binary::XS extension to perl.
 #
 # It was generated automatically by MakeMaker version
 # 7.04 (Revision: 70400) from the contents of
@@ -11,17 +11,17 @@
 
 #   MakeMaker Parameters:
 
-#     ABSTRACT_FROM => q[lib/BinaryTree/XS.pm]
+#     ABSTRACT_FROM => q[lib/Tree/Binary/XS.pm]
 #     AUTHOR => [q[Lin Yo-an <c9s@local>]]
 #     BUILD_REQUIRES => {  }
 #     CONFIGURE_REQUIRES => {  }
 #     DEFINE => q[-DENABLE_DEBUG]
 #     INC => q[-I.]
 #     LIBS => [q[]]
-#     NAME => q[BinaryTree::XS]
+#     NAME => q[Tree::Binary::XS]
 #     PREREQ_PM => {  }
 #     TEST_REQUIRES => {  }
-#     VERSION_FROM => q[lib/BinaryTree/XS.pm]
+#     VERSION_FROM => q[lib/Tree/Binary/XS.pm]
 
 # --- MakeMaker post_initialize section:
 
@@ -58,8 +58,8 @@ VENDORLIBEXP =
 AR_STATIC_ARGS = cr
 DIRFILESEP = /
 DFSEP = $(DIRFILESEP)
-NAME = BinaryTree::XS
-NAME_SYM = BinaryTree_XS
+NAME = Tree::Binary::XS
+NAME_SYM = Tree_Binary_XS
 VERSION = 0.01
 VERSION_MACRO = VERSION
 VERSION_SYM = 0_01
@@ -150,11 +150,11 @@ MM_REVISION = 70400
 # PARENT_NAME = NAME without BASEEXT and no trailing :: (eg Foo::Bar)
 # DLBASE  = Basename part of dynamic library. May be just equal BASEEXT.
 MAKE = make
-FULLEXT = BinaryTree/XS
+FULLEXT = Tree/Binary/XS
 BASEEXT = XS
-PARENT_NAME = BinaryTree
+PARENT_NAME = Tree::Binary
 DLBASE = $(BASEEXT)
-VERSION_FROM = lib/BinaryTree/XS.pm
+VERSION_FROM = lib/Tree/Binary/XS.pm
 INC = -I.
 DEFINE = -DENABLE_DEBUG
 OBJECT = $(BASEEXT)$(OBJ_EXT)
@@ -168,14 +168,14 @@ C_FILES  = XS.c
 O_FILES  = XS.o
 H_FILES  = ppport.h
 MAN1PODS = 
-MAN3PODS = lib/BinaryTree/XS.pm
+MAN3PODS = lib/Tree/Binary/XS.pm
 
 # Where is the Config information that we are using/depend on
 CONFIGDEP = $(PERL_ARCHLIBDEP)$(DFSEP)Config.pm $(PERL_INCDEP)$(DFSEP)config.h
 
 # Where to build things
-INST_LIBDIR      = $(INST_LIB)/BinaryTree
-INST_ARCHLIBDIR  = $(INST_ARCHLIB)/BinaryTree
+INST_LIBDIR      = $(INST_LIB)/Tree/Binary
+INST_ARCHLIBDIR  = $(INST_ARCHLIB)/Tree/Binary
 
 INST_AUTODIR     = $(INST_LIB)/auto/$(FULLEXT)
 INST_ARCHAUTODIR = $(INST_ARCHLIB)/auto/$(FULLEXT)
@@ -191,10 +191,10 @@ PERL_ARCHIVEDEP    =
 PERL_ARCHIVE_AFTER = 
 
 
-TO_INST_PM = lib/BinaryTree/XS.pm
+TO_INST_PM = lib/Tree/Binary/XS.pm
 
-PM_TO_BLIB = lib/BinaryTree/XS.pm \
-	blib/lib/BinaryTree/XS.pm
+PM_TO_BLIB = lib/Tree/Binary/XS.pm \
+	blib/lib/Tree/Binary/XS.pm
 
 
 # --- MakeMaker platform_constants section:
@@ -271,8 +271,8 @@ CI = ci -u
 RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
-DISTNAME = BinaryTree-XS
-DISTVNAME = BinaryTree-XS-0.01
+DISTNAME = Tree-Binary-XS
+DISTVNAME = Tree-Binary-XS-0.01
 
 
 # --- MakeMaker macro section:
@@ -291,7 +291,7 @@ MPOLLUTE =
 
 # --- MakeMaker const_loadlibs section:
 
-# BinaryTree::XS might depend on some other libraries:
+# Tree::Binary::XS might depend on some other libraries:
 # See ExtUtils::Liblist for details
 #
 
@@ -505,9 +505,9 @@ POD2MAN = $(POD2MAN_EXE)
 
 
 manifypods : pure_all  \
-	lib/BinaryTree/XS.pm
+	lib/Tree/Binary/XS.pm
 	$(NOECHO) $(POD2MAN) --section=3 --perm_rw=$(PERM_RW) -u \
-	  lib/BinaryTree/XS.pm $(INST_MAN3DIR)/BinaryTree::XS.$(MAN3EXT) 
+	  lib/Tree/Binary/XS.pm $(INST_MAN3DIR)/Tree::Binary::XS.$(MAN3EXT) 
 
 
 
@@ -565,8 +565,8 @@ realclean_subdirs :
 # Delete temporary files (via clean) and also delete dist files
 realclean purge ::  clean realclean_subdirs
 	- $(RM_F) \
-	  $(MAKEFILE_OLD) $(OBJECT) \
-	  $(FIRST_MAKEFILE) 
+	  $(MAKEFILE_OLD) $(FIRST_MAKEFILE) \
+	  $(OBJECT) 
 	- $(RM_RF) \
 	  $(DISTVNAME) 
 
@@ -588,7 +588,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) 'meta-spec:' >> META_new.yml
 	$(NOECHO) $(ECHO) '  url: http://module-build.sourceforge.net/META-spec-v1.4.html' >> META_new.yml
 	$(NOECHO) $(ECHO) '  version: '\''1.4'\''' >> META_new.yml
-	$(NOECHO) $(ECHO) 'name: BinaryTree-XS' >> META_new.yml
+	$(NOECHO) $(ECHO) 'name: Tree-Binary-XS' >> META_new.yml
 	$(NOECHO) $(ECHO) 'no_index:' >> META_new.yml
 	$(NOECHO) $(ECHO) '  directory:' >> META_new.yml
 	$(NOECHO) $(ECHO) '    - t' >> META_new.yml
@@ -611,7 +611,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",' >> META_new.json
 	$(NOECHO) $(ECHO) '      "version" : "2"' >> META_new.json
 	$(NOECHO) $(ECHO) '   },' >> META_new.json
-	$(NOECHO) $(ECHO) '   "name" : "BinaryTree-XS",' >> META_new.json
+	$(NOECHO) $(ECHO) '   "name" : "Tree-Binary-XS",' >> META_new.json
 	$(NOECHO) $(ECHO) '   "no_index" : {' >> META_new.json
 	$(NOECHO) $(ECHO) '      "directory" : [' >> META_new.json
 	$(NOECHO) $(ECHO) '         "t",' >> META_new.json
@@ -1032,7 +1032,7 @@ ppd :
 
 pm_to_blib : $(FIRST_MAKEFILE) $(TO_INST_PM)
 	$(NOECHO) $(ABSPERLRUN) -MExtUtils::Install -e 'pm_to_blib({@ARGV}, '\''$(INST_LIB)/auto'\'', q[$(PM_FILTER)], '\''$(PERM_DIR)'\'')' -- \
-	  lib/BinaryTree/XS.pm blib/lib/BinaryTree/XS.pm 
+	  lib/Tree/Binary/XS.pm blib/lib/Tree/Binary/XS.pm 
 	$(NOECHO) $(TOUCH) pm_to_blib
 
 

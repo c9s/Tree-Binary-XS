@@ -1,4 +1,4 @@
-package BinaryTree::XS;
+package Tree::Binary::XS;
 
 use 5.018002;
 use strict;
@@ -12,7 +12,7 @@ our @ISA = qw(Exporter);
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 
-# This allows declaration	use BinaryTree ':all';
+# This allows declaration	use Tree::Binary ':all';
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
 our %EXPORT_TAGS = ( 'all' => [ qw(
@@ -28,7 +28,7 @@ our @EXPORT = qw(
 our $VERSION = '0.01';
 
 require XSLoader;
-XSLoader::load('BinaryTree::XS', $VERSION);
+XSLoader::load('Tree::Binary::XS', $VERSION);
 
 # Preloaded methods go here.
 
@@ -38,12 +38,12 @@ __END__
 
 =head1 NAME
 
-BinaryTree - Perl extension for blah blah blah
+Tree::Binary - Perl extension for blah blah blah
 
 =head1 SYNOPSIS
 
-  use BinaryTree;
-  my $tree = BinaryTree->new({ by_key => 'id' });
+  use Tree::Binary;
+  my $tree = Tree::Binary->new({ by_key => 'id' });
 
   $tree->insert({ foo => 'bar', id => 11 });
 

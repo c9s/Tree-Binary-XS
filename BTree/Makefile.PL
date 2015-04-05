@@ -10,7 +10,9 @@ WriteMakefile(
       (ABSTRACT_FROM  => 'lib/BTree.pm', # retrieve abstract from module
        AUTHOR         => 'Lin Yo-an <c9s@local>') : ()),
     LIBS              => [''], # e.g., '-lm'
-    DEFINE            => '', # e.g., '-DHAVE_SOMETHING'
+
+    # TODO: Convert a perl hashref to the '-D" arguments?
+    DEFINE            => '-DENABLE_DEBUG', # e.g., '-DHAVE_SOMETHING'
     INC               => '-I.', # e.g., '-I. -I/usr/include/other'
 	# Un-comment this if you add C files to link with later:
     # OBJECT            => '$(O_FILES)', # link all the C files too

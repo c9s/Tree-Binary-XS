@@ -29,6 +29,12 @@ my $ret;
 $ret = $tree->insert({ id => 10, 'name' => 'Bob' });
 ok($ret, 'normal insert');
 
+$ret = $tree->insert({ id => 8, 'name' => 'John' });
+ok($ret, 'normal insert');
+
+$ret = $tree->insert({ id => 12, 'name' => 'Connie' });
+ok($ret, 'normal insert');
+
 $ret = $tree->insert(11 , { id => 10, 'name' => 'Bob' });
 ok($ret, 'insert with an external key');
 

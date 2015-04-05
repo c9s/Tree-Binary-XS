@@ -73,6 +73,38 @@ bool btree_insert(BTreeNode * node, IV key, HV * payload) {
 }
 
 
+void btree_dump(BTreeNode* node, uint indent);
+
+void btree_dump(BTreeNode* node, uint indent)
+{
+    for (int i = 0 ; i < indent; i++) {
+        fprintf(stderr, "    ");
+    }
+    fprintf(stderr, "(o) key: %lu", node->key);
+    if (node->payload) {
+        fprintf(stderr, ", hash: %s", Perl_sv_peek((SV*) node->payload) );
+    } else {
+        fprintf(stderr, ", hash: (empty)");
+    }
+    fprintf(stderr, "\n");
+
+    if (node->left) {
+        for (int i = 0 ; i < indent; i++) {
+            fprintf(stderr, "    ");
+        }
+        fprintf(stderr, "    ->left:\n");
+        btree_dump(node->left, indent+2);
+    }
+    if (node->right) {
+        for (int i = 0 ; i < indent; i++) {
+            fprintf(stderr, "    ");
+        }
+        fprintf(stderr, "    ->right:\n");
+        btree_dump(node->right, indent+2);
+    }
+}
+
+
 IV hv_fetch_key_must(HV * hash, char *field, uint field_len);
 
 IV hv_fetch_key_must(HV * hash, char *field, uint field_len)
@@ -88,10 +120,12 @@ IV hv_fetch_key_must(HV * hash, char *field, uint field_len)
 }
 
 
-#define DEBUG 1
+
+
+// #define ENABLE_DEBUG 1
 
 #define debug(fmt, ...) \
-            do { if (DEBUG) fprintf(stderr, "DEBUG: " fmt "\n", ##__VA_ARGS__); } while (0)
+            do { if (ENABLE_DEBUG) fprintf(stderr, "DEBUG: " fmt "\n", ##__VA_ARGS__); } while (0)
 
 
 MODULE = BTree		PACKAGE = BTree		
@@ -205,12 +239,14 @@ insert(self_sv, ...)
     }
 
     debug("Key IV is %"IVdf"", key);
+    debug("Peek: %s", Perl_sv_peek((SV*) node_hash));
 
     if (pad->root) {
         btree_insert(pad->root, key, node_hash);
     } else {
         pad->root = btree_node_create(key, node_hash);
     }
+    btree_dump(pad->root, 0);
     XSRETURN_YES;
 
 

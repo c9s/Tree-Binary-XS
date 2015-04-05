@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 6;
+use Test::More tests => 8;
 BEGIN { use_ok('BTree') };
 
 #########################

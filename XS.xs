@@ -330,10 +330,6 @@ AV * btree_pad_insert_av_nodes_by_key_field(BinaryTreePad * pad, char * key_fiel
 }
 
 
-
-
-
-
 MODULE = Tree::Binary::XS		PACKAGE = Tree::Binary::XS		
 
 TYPEMAP: <<END;
@@ -527,6 +523,7 @@ exists(self_sv, arg)
             if (pad->options) {
                 key_field = get_options_key_field(pad->options);
             }
+            key = hv_fetch_key_must(node_hash, key_field, strlen(key_field));
 
         } else {
             croak("The exists method can only accept exists(IV) or exists(HashRef)");

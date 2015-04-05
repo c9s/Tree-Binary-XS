@@ -42,8 +42,8 @@ Tree::Binary - Perl extension for blah blah blah
 
 =head1 SYNOPSIS
 
-  use Tree::Binary;
-  my $tree = Tree::Binary->new({ by_key => 'id' });
+  use Tree::Binary::XS;
+  my $tree = Tree::Binary::XS->new({ by_key => 'id' });
 
   $tree->insert({ foo => 'bar', id => 11 });
 

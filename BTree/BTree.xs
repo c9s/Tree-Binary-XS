@@ -73,6 +73,21 @@ bool btree_insert(BTreeNode * node, IV key, HV * payload) {
 }
 
 
+IV hv_fetch_key_must(HV * hash, char *field, uint field_len);
+
+IV hv_fetch_key_must(HV * hash, char *field, uint field_len)
+{
+    SV** ret = hv_fetch(hash, field, field_len, FALSE);
+    if (ret == NULL) {
+        croak("key field %s does not exist", field);
+    }
+    if (!SvIOK(*ret)) {
+        croak("The value of %s is invalid", field);
+    }
+    return SvIV(*ret);
+}
+
+
 #define DEBUG 1
 
 #define debug(fmt, ...) \
@@ -159,47 +174,43 @@ insert(self_sv, ...)
         }
     }
 
+    IV key;
+    HV * node_hash = NULL;
+
     // if there is only one argument (items == 2 including $self)
     if (items == 2) {
         debug("found 1 arguments");
         if (SvIOK(ST(1))) {
             debug("first argument is IV, without payload");
+            key = SvIV( ST(1) );
+            node_hash = newHV();
         } else if (SvROK( ST(1) ) && SvTYPE(SvRV(ST(1))) == SVt_PVHV ) {
             debug("first argument is hashref");
+            node_hash = (HV*) SvRV(ST(1));
         }
     } else if (items == 3) {
         debug("found 2 arguments");
         if (SvIOK(ST(1)) && SvROK(ST(2)) && SvTYPE(SvRV(ST(2))) == SVt_PVHV) {
             debug("first argument is IV and the second one is hashref");
+            key = SvIV( ST(1) );
+            node_hash = (HV*) SvRV(ST(2));
+        } else {
+            croak("The BTree::insert method can only accept either (key, hashref) or (hashref)");
         }
     }
 
-
-    /*
-    HV * node_hash = (HV*) SvRV(new_node_rv);
-
-    debug("Found key field: %s", key_field);
-    SV** key_svs = hv_fetch(node_hash, key_field, strlen(key_field), FALSE);
-
-    if (key_svs == NULL) {
-        XSRETURN_UNDEF;
-    }
-    
-    // not an integer 
-    if (!SvIOK(*key_svs)) {
-        XSRETURN_UNDEF;
+    if (!key) {
+        // If the key does not exist
+        key = hv_fetch_key_must(node_hash, key_field, strlen(key_field));
     }
 
-    IV key = SvIV(*key_svs);
     debug("Key IV is %"IVdf"", key);
 
-    // Insert the node into the node
     if (pad->root) {
         btree_insert(pad->root, key, node_hash);
     } else {
         pad->root = btree_node_create(key, node_hash);
     }
-    */
     XSRETURN_YES;
 
 

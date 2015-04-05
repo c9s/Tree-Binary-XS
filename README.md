@@ -1,4 +1,4 @@
-BinaryTree version 0.01
+BinaryTree::XS version 0.01
 =======================
 
 ## INSTALLATION

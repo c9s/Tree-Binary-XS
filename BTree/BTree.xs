@@ -48,6 +48,16 @@ BTreeNode * btree_node_create(IV key, HV *payload)
     return new_node;
 }
 
+BTreeNode * btree_find_leftmost_node(BTreeNode * n)
+{
+    if (n->left) {
+        return btree_find_leftmost_node(n->left);
+    }
+    return n;
+}
+
+
+
 bool btree_insert(BTreeNode * node, IV key, HV * payload) {
     if (key < node->key) {
         if (node->left) {

@@ -16,6 +16,7 @@ struct _btree_pad {
 struct _btree_node {  
     IV key;
     // unsigned long size;
+    BTreeNode* parent;
     BTreeNode* left;
     BTreeNode* right;
     HV * payload;
@@ -26,7 +27,12 @@ BTreePad * btree_pad_new();
 
 bool btree_insert(BTreeNode * node, IV key, HV * payload);
 
+BTreeNode * btree_find_leftmost_node(BTreeNode * n);
+
 BTreeNode * btree_node_create(IV key, HV *payload);
+
+bool btree_insert(BTreeNode * node, IV key, HV * payload);
+
 
 BTreePad * btree_pad_new()
 {
@@ -56,30 +62,96 @@ BTreeNode * btree_find_leftmost_node(BTreeNode * n)
     return n;
 }
 
+bool btree_delete(BTreeNode * node, IV key);
+
+void btree_free(BTreeNode * node)
+{
+    if (node) {
+        if (node->left) {
+            btree_free(node->left);
+        }
+        if (node->right) {
+            btree_free(node->right);
+        }
+        if (node->payload) {
+            // SvREFCNT_dec(node->payload);
+        }
+        Safefree(node);
+    }
+}
+
+bool btree_delete(BTreeNode * node, IV key) 
+{
+    if (key < node->key) {
+        if (node->left) {
+            return btree_delete(node->left, key);
+        } else {
+            return FALSE;
+        }
+    } else if (key > node->key) {
+        if (node->right) {
+            return btree_delete(node->right, key);
+        } else {
+            return FALSE;
+        }
+    } else if (key == node->key) {
+
+        if (node->left && node->right) {
+            BTreeNode* leftmost = btree_find_leftmost_node(node->right);
+            node->key = leftmost->key;
+            node->payload = leftmost->payload;
+            btree_free(leftmost);
+        } else if (node->left) {
+            node->key = node->left->key;
+            node->payload = node->left->payload;
+            node->left = node->left->left;
+            node->right = node->left->right;
+        } else if (node->right) {
+            node->key = node->right->key;
+            node->payload = node->right->payload;
+            node->right = node->right->right;
+            node->right = node->right->right;
+        } else {
+            if (node->parent->left == node) {
+                node->parent->left = NULL;
+            } else if (node->parent->right == node) {
+                node->parent->right = NULL;
+            }
+            btree_free(node);
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
 
 
-bool btree_insert(BTreeNode * node, IV key, HV * payload) {
+
+
+bool btree_insert(BTreeNode * node, IV key, HV * payload) 
+{
     if (key < node->key) {
         if (node->left) {
             return btree_insert(node->left, key, payload);
         } else {
             BTreeNode * new_node = btree_node_create(key, payload);
+            new_node->parent = node;
             node->left = new_node;
         }
-        return 1;
+        return TRUE;
     } else if (key > node->key) {
         if (node->right) {
             return btree_insert(node->right, key, payload);
         } else {
             BTreeNode * new_node = btree_node_create(key, payload);
+            new_node->parent = node;
             node->right = new_node;
         }
-        return 1;
+        return TRUE;
     } else if (key == node->key) {
-        // raise error
-        return 0;
+        croak("the key already exists in the tree.");
+        return FALSE;
     }
-    return 0;
+    return FALSE;
 }
 
 
@@ -186,14 +258,42 @@ options(self_sv)
     OUTPUT:
         RETVAL
 
+
+void
+delete(self_sv, key_sv, ...)
+    SV* self_sv
+    SV* key_sv
+    PPCODE:
+    BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+    if (!pad->root) {
+        // Empty tree
+        XSRETURN_UNDEF;
+    }
+
+    if (!SvIOK(key_sv)) {
+        croak("Invalid key: it should be an integer.");
+    }
+
+    IV key = SvIV(key_sv);
+    if (btree_delete(pad->root, key)) {
+        XSRETURN_YES;
+    }
+    XSRETURN_NO;
+
+
+void
+dump(self_sv)
+    SV* self_sv
+    CODE:
+        BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
+        btree_dump(pad->root, 0);
+
 void
 insert(self_sv, ...)
     SV* self_sv
     PPCODE:
 
     BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
-
-
 
     char *key_field = "key";
 
@@ -270,7 +370,7 @@ DESTROY(self_sv)
         // printf("DESTORY pad: %x\n", pad);
         // BTreePad* pad = *(BTreePad**) p;
         if (pad && pad->root) {
-            Safefree(pad->root);
+            btree_free(pad->root);
         }
         Safefree(pad);
         SvRV(SvRV(self_sv)) = 0;

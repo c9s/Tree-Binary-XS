@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4;
+use Test::More tests => 6;
 BEGIN { use_ok('BTree') };
 
 #########################
@@ -24,7 +24,12 @@ my $options = $tree->options();
 ok($options);
 is('HASH', ref $options);
 
-my $ret = $tree->insert({ id => 10 });
-use Data::Dumper; warn Dumper( $ret );
+my $ret;
+
+$ret = $tree->insert({ id => 10, 'name' => 'Bob' });
+ok($ret, 'normal insert');
+
+$ret = $tree->insert(11 , { id => 10, 'name' => 'Bob' });
+ok($ret, 'insert with an external key');
 
 

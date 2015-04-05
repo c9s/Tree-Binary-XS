@@ -43,7 +43,21 @@ BTree - Perl extension for blah blah blah
 =head1 SYNOPSIS
 
   use BTree;
-  my $tree = BTree->new(  );
+  my $tree = BTree->new({ by_key => 'id' });
+
+  $tree->insert({ foo => 'bar', id => 11 });
+
+  # to insert multiple keys one time.
+  $tree->insert([{ foo => 'bar', id => 11 }, ... ]);
+
+  # Use specified key instead of the key from payload
+  $tree->insert(10, { foo => 'bar' });
+
+  $tree->update(10, { foo => 'bar' })
+
+  $tree->exists(10);
+  $tree->exists({ foo => 'bar' , id => 10 });
+
 
 =head1 DESCRIPTION
 

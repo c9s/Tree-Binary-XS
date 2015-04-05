@@ -30,13 +30,10 @@ struct _btree_node {
 
 BTreePad * btree_pad_new();
 
-bool btree_insert(BTreeNode * node, IV key, HV * payload);
 
 BTreeNode * btree_find_leftmost_node(BTreeNode * n);
 
 BTreeNode * btree_node_create(IV key, HV *payload);
-
-bool btree_insert(BTreeNode * node, IV key, HV * payload);
 
 
 BTreePad * btree_pad_new()
@@ -58,6 +55,13 @@ BTreeNode * btree_node_create(IV key, HV *payload)
     new_node->right = NULL;
     return new_node;
 }
+
+
+inline bool btree_insert_node_hash_by_key(BTreeNode * node, IV key, HV * payload);
+inline bool btree_pad_insert_node(BTreePad *pad, IV key, HV *node_hash);
+inline bool btree_pad_insert_node_by_key_field(BTreePad *pad, char * key_field, int key_field_len, HV *node_hash);
+inline bool btree_pad_insert_av_nodes_by_key_field(BTreePad * pad, char * key_field, unsigned int key_field_len, AV* new_nodes);
+
 
 BTreeNode * btree_find_leftmost_node(BTreeNode * n)
 {
@@ -176,11 +180,11 @@ BTreeNode * btree_search(BTreeNode * node, IV key)
     return NULL;
 }
 
-bool btree_insert(BTreeNode * node, IV key, HV * payload) 
+bool btree_insert_node_hash_by_key(BTreeNode * node, IV key, HV * payload) 
 {
     if (key < node->key) {
         if (node->left) {
-            return btree_insert(node->left, key, payload);
+            return btree_insert_node_hash_by_key(node->left, key, payload);
         } else {
             BTreeNode * new_node = btree_node_create(key, payload);
             new_node->parent = node;
@@ -189,7 +193,7 @@ bool btree_insert(BTreeNode * node, IV key, HV * payload)
         return TRUE;
     } else if (key > node->key) {
         if (node->right) {
-            return btree_insert(node->right, key, payload);
+            return btree_insert_node_hash_by_key(node->right, key, payload);
         } else {
             BTreeNode * new_node = btree_node_create(key, payload);
             new_node->parent = node;
@@ -273,6 +277,38 @@ char * get_options_key_field(HV * options)
     }
     return key_field;
 }
+
+
+
+bool btree_pad_insert_node(BTreePad *pad, IV key, HV *node_hash)
+{
+    SvREFCNT_inc(node_hash);
+    if (pad->root) {
+        return btree_insert_node_hash_by_key(pad->root, key, node_hash);
+    }
+    pad->root = btree_node_create(key, node_hash);
+    return TRUE;
+}
+
+bool btree_pad_insert_node_by_key_field(BTreePad *pad, char * key_field, int key_field_len, HV *node_hash)
+{
+    IV key = hv_fetch_key_must(node_hash, key_field, key_field_len);
+    return btree_pad_insert_node(pad, key, node_hash);
+}
+
+bool btree_pad_insert_av_nodes_by_key_field(BTreePad * pad, char * key_field, unsigned int key_field_len, AV* new_nodes)
+{
+    SSize_t top_index = av_top_index(new_nodes);
+    for (int i = 0; i <= top_index; i++) {
+        SV **  new_node_ref_p = av_fetch(new_nodes, i, FALSE);
+        HV * new_node = (HV*) SvRV(*new_node_ref_p);
+        if (!btree_pad_insert_node_by_key_field(pad, key_field, key_field_len, new_node)) {
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
 
 
 
@@ -473,12 +509,19 @@ insert(self_sv, ...)
 
     // if there is only one argument (items == 2 including $self)
     if (items == 2) {
+
+        // If the key is defined but without hash
         if (SvIOK(ST(1))) {
             key = SvIV( ST(1) );
             node_hash = newHV();
         } else if (SvROK(ST(1)) && SvTYPE(SvRV(ST(1))) == SVt_PVHV ) {
             // dereference the hashref
             node_hash = (HV*) SvRV(ST(1));
+        } else if (SvROK(ST(1)) && SvTYPE(SvRV(ST(1))) == SVt_PVAV ) {
+
+            bool ret = btree_pad_insert_av_nodes_by_key_field(pad, key_field, strlen(key_field), (AV*) SvRV(ST(1)));
+            XSRETURN(ret);
+
         } else {
             croak("The BTree::insert method can only accept either (key, hashref) or (hashref)");
         }
@@ -495,15 +538,9 @@ insert(self_sv, ...)
         // If the key does not exist
         key = hv_fetch_key_must(node_hash, key_field, strlen(key_field));
     }
-    SvREFCNT_inc(node_hash);
-    // debug("node hash address: %x", node_hash);
-    // Perl_sv_dump(node_hash);
-    if (pad->root) {
-        btree_insert(pad->root, key, node_hash);
-    } else {
-        pad->root = btree_node_create(key, node_hash);
-    }
-    XSRETURN_YES;
+
+    bool ret = btree_pad_insert_node(pad, key, node_hash);
+    XSRETURN(ret);
 
 void
 DESTROY(self_sv)

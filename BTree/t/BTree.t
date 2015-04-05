@@ -68,21 +68,6 @@ $tree->delete(13, 12, 3);
 ok !$tree->search(13), 'key 13 is deleted';
 ok !$tree->search(12), 'key 12 is deleted';
 ok !$tree->search(3), 'key 3 is deleted';
-$tree->dump();
-
-
-__END__
-
-
-
-
-
-
-
-
-$tree->dump();
-
-$ret = $tree->insert(199 , { id => 10, 'name' => 'Bob' });
-ok($ret, 'insert with an external key');
+# $tree->dump();
 
 

@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 15;
+use Test::More tests => 21;
 BEGIN { use_ok('BTree') };
 
 #########################
@@ -29,11 +29,23 @@ my $ret;
 $ret = $tree->insert({ id => 10, 'name' => 'Bob' });
 ok($ret, 'normal insert');
 
+my $n;
+$n = $tree->search(10);
+is('Bob', $n->{name});
+is(10, $n->{id});
+
+
 $ret = $tree->insert({ id => 8, 'name' => 'John' });
 ok($ret, 'normal insert');
 
 $ret = $tree->update({ id => 8, 'name' => 'Johnson' });
 ok($ret, 'normal update');
+
+
+$n = $tree->search(8);
+is('Johnson', $n->{name});
+is(8, $n->{id});
+
 
 $ret = $tree->insert({ id => 12, 'name' => 'Connie' });
 ok($ret, 'normal insert');
@@ -51,9 +63,22 @@ ok $tree->insert({ id => 13, 'name' => 'Wendy' }), "insert Wendy @ 13";
 ok $tree->insert({ id => 12, 'name' => 'Samma' }), "insert Samma @ 12";
 ok $tree->insert({ id => 3, 'name' => 'Amy' }), "insert Amy @ 3";
 $tree->delete(13);
-
-diag("deleting multiple keys");
 $tree->delete(13, 12, 3);
+
+ok !$tree->search(13), 'key 13 is deleted';
+ok !$tree->search(12), 'key 12 is deleted';
+ok !$tree->search(3), 'key 3 is deleted';
+$tree->dump();
+
+
+__END__
+
+
+
+
+
+
+
 
 $tree->dump();
 

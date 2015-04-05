@@ -64,14 +64,14 @@ BTreeNode * btree_find_leftmost_node(BTreeNode * n)
 
 bool btree_delete(BTreeNode * node, IV key);
 
-void btree_free(BTreeNode * node)
+void btree_node_free(BTreeNode * node)
 {
     if (node) {
         if (node->left) {
-            btree_free(node->left);
+            btree_node_free(node->left);
         }
         if (node->right) {
-            btree_free(node->right);
+            btree_node_free(node->right);
         }
         if (node->payload) {
             // SvREFCNT_dec(node->payload);
@@ -100,24 +100,26 @@ bool btree_delete(BTreeNode * node, IV key)
             BTreeNode* leftmost = btree_find_leftmost_node(node->right);
             node->key = leftmost->key;
             node->payload = leftmost->payload;
-            btree_free(leftmost);
+            btree_node_free(leftmost);
         } else if (node->left) {
-            node->key = node->left->key;
-            node->payload = node->left->payload;
-            node->left = node->left->left;
-            node->right = node->left->right;
+            BTreeNode *to_free = node->left;
+            node->key = to_free->key;
+            node->payload = to_free->payload;
+            node->left = to_free->left;
+            Safefree(to_free);
         } else if (node->right) {
-            node->key = node->right->key;
-            node->payload = node->right->payload;
-            node->right = node->right->right;
-            node->right = node->right->right;
+            BTreeNode *to_free = node->right;
+            node->key = to_free->key;
+            node->payload = to_free->payload;
+            node->right = to_free->right;
+            Safefree(to_free);
         } else {
             if (node->parent->left == node) {
                 node->parent->left = NULL;
             } else if (node->parent->right == node) {
                 node->parent->right = NULL;
             }
-            btree_free(node);
+            btree_node_free(node);
         }
         return TRUE;
     }
@@ -264,20 +266,29 @@ delete(self_sv, key_sv, ...)
     SV* self_sv
     SV* key_sv
     PPCODE:
+
     BTreePad* pad = (BTreePad*) SvRV(SvRV(self_sv));
     if (!pad->root) {
         // Empty tree
         XSRETURN_UNDEF;
     }
 
-    if (!SvIOK(key_sv)) {
-        croak("Invalid key: it should be an integer.");
+
+    if (items > 1) {
+        debug("Found more than one key to delete");
+        int i;
+        for (i = 1; i < items; i++) {
+            SV * arg_sv = ST(i);
+            if (!SvIOK(arg_sv)) {
+                croak("Invalid key: it should be an integer.");
+            }
+            IV key = SvIV(arg_sv);
+            if (btree_delete(pad->root, key)) {
+                XSRETURN_YES;
+            }
+        }
     }
 
-    IV key = SvIV(key_sv);
-    if (btree_delete(pad->root, key)) {
-        XSRETURN_YES;
-    }
     XSRETURN_NO;
 
 
@@ -370,7 +381,7 @@ DESTROY(self_sv)
         // printf("DESTORY pad: %x\n", pad);
         // BTreePad* pad = *(BTreePad**) p;
         if (pad && pad->root) {
-            btree_free(pad->root);
+            btree_node_free(pad->root);
         }
         Safefree(pad);
         SvRV(SvRV(self_sv)) = 0;

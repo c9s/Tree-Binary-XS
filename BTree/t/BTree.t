@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 11;
+use Test::More tests => 14;
 BEGIN { use_ok('BTree') };
 
 #########################
@@ -44,9 +44,17 @@ ok(!$ret, 'inexistent key deletion');
 $ret = $tree->delete(99);
 ok(!$ret, 'inexistent key deletion');
 
+ok $tree->insert({ id => 13, 'name' => 'Wendy' }), "insert Wendy @ 13";
+ok $tree->insert({ id => 12, 'name' => 'Samma' }), "insert Samma @ 12";
+ok $tree->insert({ id => 3, 'name' => 'Amy' }), "insert Amy @ 3";
+$tree->delete(13);
+
+diag("deleting multiple keys");
+$tree->delete(13, 12, 3);
+
 $tree->dump();
 
-$ret = $tree->insert(11 , { id => 10, 'name' => 'Bob' });
+$ret = $tree->insert(199 , { id => 10, 'name' => 'Bob' });
 ok($ret, 'insert with an external key');
 
 

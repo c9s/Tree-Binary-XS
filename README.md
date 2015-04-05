@@ -1,7 +1,7 @@
 BinaryTree version 0.01
-======================
+=======================
 
-INSTALLATION
+## INSTALLATION
 
 To install this module type the following:
 
@@ -10,13 +10,13 @@ To install this module type the following:
    make test
    make install
 
-DEPENDENCIES
+## DEPENDENCIES
 
 This module requires these other modules and libraries:
 
   blah blah blah
 
-COPYRIGHT AND LICENCE
+## COPYRIGHT AND LICENCE
 
 Put the correct copyright and licence information here.
 

@@ -66,10 +66,23 @@ Tree::Binary::XS - Perl extension for manipulating binary tree structure
   $tree->exists(10);
   $tree->exists({ foo => 'bar' , id => 10 });
 
+  $tree->inorder_traverse(sub { 
+        my ($key, $node) = @_;
+    });
+
+  $tree->postorder_traverse(sub { 
+        my ($key, $node) = @_;
+    });
+
+  $tree->preorder_traverse(sub { 
+        my ($key, $node) = @_;
+    });
+
 =head1 DESCRIPTION
 
-Please note this extension is not compatible with the L<Tree::Binary> package, this module redesigned and simplified 
-the interface of manipulating tree structure.
+Please note this extension is not compatible with the L<Tree::Binary> package,
+this module was redesigned and simplified the interface of manipulating tree
+structure.
 
 =head2 EXPORT
 
@@ -77,14 +90,7 @@ None by default.
 
 =head1 SEE ALSO
 
-Mention other useful documentation such as the documentation of
-related modules or operating system documentation (such as man pages
-in UNIX), or any relevant external documentation such as RFCs or
-standards.
-
-If you have a mailing list set up for your module, mention it here.
-
-If you have a web site set up for your module, mention it here.
+L<Tree::Binary>, L<Tree::Binary::Search>
 
 =head1 AUTHOR
 

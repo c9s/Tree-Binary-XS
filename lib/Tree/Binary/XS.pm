@@ -47,7 +47,6 @@ Tree::Binary::XS - Perl extension for manipulating binary tree structure
 
   $tree->insert({ foo => 'bar', id => 11 });
 
-  # to insert multiple keys one time.
   $tree->insert([{ foo => 'bar', id => 11 }, ... ]);
 
   $ret->exists(10);
@@ -56,7 +55,7 @@ Tree::Binary::XS - Perl extension for manipulating binary tree structure
   # Use specified key instead of the key from payload
   $tree->insert(10, { foo => 'bar' });
 
-  # Bulk insert
+  # to insert multiple keys one time.
   @ret = $tree->insert_those([{ id => 10, 'name' => 'Bob' },  { id => 3, 'name' => 'John' }, { id => 2, 'name' => 'Hank' } ]);
 
   $tree->update(10, { foo => 'bar' })
@@ -84,7 +83,59 @@ Please note this extension is not compatible with the L<Tree::Binary> package,
 this module was redesigned and simplified the interface of manipulating tree
 structure.
 
-=head2 EXPORT
+=head1 FUNCTIONS
+
+=over 4
+
+=item $tree = Tree::Binary::XS->new({  by_key => $field_name })
+
+The C<new> method constructs the Tree object, you may specify the C<by_key> option to let L<Tree::Binary::XS> 
+get the key from the inserted objects.
+
+=item $tree->insert(hashref $object)
+
+Once you've defined the C<by_key>, you can simply pass the object to the insert method, for example:
+
+    $tree->insert({
+        id => 11,
+        name => 'John',
+    });
+
+And C<11> will be the key of the object.
+
+=item $tree->insert(IV key, hashref $object)
+
+If you want to specify another key to insert the object, you may pass the C<key> as the first argument of the C<insert> method.
+
+=item @ret = $tree->insert_those([ $obj1, $obj2, ... ])
+
+=item $tree->update(IV key, $new_object)
+
+=item $tree->exists(IV key)
+
+=item $tree->exists(hashref $object)
+
+=item $tree->search(IV key)
+
+=item $tree->search(hashref $object)
+
+
+=back
+
+
+=head2 Tree Traversal
+
+=over 4
+
+=item $tree->postorder_traverse(sub { my ($key, $node) = @_; })
+
+=item $tree->preorder_traverse(sub { my ($key, $node) = @_; })
+
+=item $tree->inorder_traverse(sub { my ($key, $node) = @_; })
+
+=cut
+
+=head1 EXPORT
 
 None by default.
 

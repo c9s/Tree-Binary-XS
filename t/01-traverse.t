@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More tests => 8;
+use Test::More tests => 12;
 BEGIN { use_ok('Tree::Binary::XS') };
 
 #########################

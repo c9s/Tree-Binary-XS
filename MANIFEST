@@ -6,4 +6,7 @@ ppport.h
 README
 t/00-basic.t
 t/01-bulk_insert.t
+t/01-traverse.t
 lib/Tree/Binary/XS.pm
+.shipit
+MANIFEST.SKIP

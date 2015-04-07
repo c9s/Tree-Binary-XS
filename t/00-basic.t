@@ -70,6 +70,12 @@ $tree->delete(13, 12, 3);
 ok !$tree->search(13), 'key 13 is deleted';
 ok !$tree->search(12), 'key 12 is deleted';
 ok !$tree->search(3), 'key 3 is deleted';
+
+my @keys = ();
+$tree->preorder_traverse(sub { 
+        my ($key, $node) = @_;
+        use Data::Dumper; warn Dumper( $key, $node );
+    });
 # $tree->dump();
 
 

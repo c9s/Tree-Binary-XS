@@ -57,6 +57,7 @@ BinaryTreeNode * btree_node_create(IV key, HV *payload)
 }
 
 
+bool btree_update(BinaryTreeNode * node, IV key, HV * payload);
 BinaryTreeNode * btree_search(BinaryTreeNode * node, IV key);
 inline bool btree_insert_node_hash_by_key(BinaryTreeNode * node, IV key, HV * payload);
 inline bool btree_pad_insert_node(BinaryTreePad *pad, IV key, HV *node_hash);
@@ -64,6 +65,9 @@ inline bool btree_pad_insert_node_by_key_field(BinaryTreePad *pad, char * key_fi
 inline AV * btree_pad_insert_av_nodes_by_key_field(BinaryTreePad * pad, char * key_field, unsigned int key_field_len, AV* new_nodes);
 bool btree_node_exists(BinaryTreeNode * node, IV key);
 
+void btree_preorder_traverse(BinaryTreeNode * node, SV *callback);
+void btree_inorder_traverse(BinaryTreeNode * node, SV *callback);
+void btree_postorder_traverse(BinaryTreeNode * node, SV *callback);
 
 BinaryTreeNode * btree_find_leftmost_node(BinaryTreeNode * n)
 {
@@ -138,7 +142,68 @@ bool btree_delete(BinaryTreeNode * node, IV key)
 }
 
 
-bool btree_update(BinaryTreeNode * node, IV key, HV * payload);
+static
+inline
+void callback_value(IV key, SV* node_sv, SV* callback)
+{
+    int ret;
+
+    dSP;
+    PUSHMARK(SP);
+    XPUSHs(sv_2mortal(newSViv(key)));
+    XPUSHs(node_sv);
+    PUTBACK;
+
+    ret = call_sv(callback, G_SCALAR);
+    SPAGAIN;
+
+    /*
+    if (!ret)
+        croak("callback did not return a value");
+    */
+    // IV value = POPi;
+    PUTBACK;
+    // return value;
+}
+
+void btree_postorder_traverse(BinaryTreeNode * node, SV *callback)
+{
+    if (node->left) {
+        btree_preorder_traverse(node->left, callback);
+    }
+    if (node->right) {
+        btree_preorder_traverse(node->right, callback);
+    }
+    if (node->payload) {
+        callback_value(node->key, (SV*) newRV_noinc((SV*) node->payload), callback);
+    }
+}
+
+void btree_inorder_traverse(BinaryTreeNode * node, SV *callback)
+{
+    if (node->left) {
+        btree_preorder_traverse(node->left, callback);
+    }
+    if (node->payload) {
+        callback_value(node->key, (SV*) newRV_noinc((SV*) node->payload), callback);
+    }
+    if (node->right) {
+        btree_preorder_traverse(node->right, callback);
+    }
+}
+
+void btree_preorder_traverse(BinaryTreeNode * node, SV *callback)
+{
+    if (node->payload) {
+        callback_value(node->key, (SV*) newRV_noinc((SV*) node->payload), callback);
+    }
+    if (node->left) {
+        btree_preorder_traverse(node->left, callback);
+    }
+    if (node->right) {
+        btree_preorder_traverse(node->right, callback);
+    }
+}
 
 bool btree_update(BinaryTreeNode * node, IV key, HV * payload)
 {
@@ -500,6 +565,36 @@ update(self_sv, ...)
         }
         XSRETURN_NO;
 
+
+void
+preorder_traverse(self_sv, callback)
+    SV* self_sv
+    SV* callback
+    CODE:
+        BinaryTreePad* pad = (BinaryTreePad*) SvRV(SvRV(self_sv));
+        if (pad->root) {
+            btree_preorder_traverse(pad->root, callback);
+        }
+
+void
+inorder_traverse(self_sv, callback)
+    SV* self_sv
+    SV* callback
+    CODE:
+        BinaryTreePad* pad = (BinaryTreePad*) SvRV(SvRV(self_sv));
+        if (pad->root) {
+            btree_inorder_traverse(pad->root, callback);
+        }
+
+void
+postorder_traverse(self_sv, callback)
+    SV* self_sv
+    SV* callback
+    CODE:
+        BinaryTreePad* pad = (BinaryTreePad*) SvRV(SvRV(self_sv));
+        if (pad->root) {
+            btree_postorder_traverse(pad->root, callback);
+        }
 
 
 SV *
